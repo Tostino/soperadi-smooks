@@ -1,0 +1,61 @@
+/*******************************************************************************
+ * Copyright (c) 2009 SOPERA GmbH
+ * All rights reserved. 
+ * This program and the accompanying materials are made available
+ * under the terms of the GNU Lesser General Public License v 3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-3.0.txt
+ ******************************************************************************/
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn 
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType
+		java.util.List 
+    	java.util.Map		
+	" 
+%>
+<% 
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName();
+    
+    String mode = ElementParameterParser.getValue(node, "__INPUT_FORMAT__");
+    List< ? extends IConnection> connections = node.getOutgoingSortedConnections();
+
+if(connections!=null && connections.size()>0){
+
+	boolean hasConn = false;
+	
+	//get all the children collections of the loop node.
+	for(IConnection conn : connections){
+		if (conn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)){
+			hasConn = true;
+		}
+	}
+	   if(hasConn == true && ("EDI").equals(mode)){
+    	
+%>
+
+	nb_line_<%=cid %>++;
+	if (!inputFlow_<%=cid %>.isEndOfFlow()) inputFlow_<%=cid %>.next();
+	   }// loop to iterate the data communication
+<%
+	   }// if (mode)
+	}
+%>
+	//System.out.println("nb_line:" + nb_line_<%=cid %>);
+	globalMap.put("<%=cid %>_NB_LINE",nb_line_<%=cid %>);
+	} // try main block
+	catch (java.lang.Exception e) {
+		System.err.println("There is an Exception in <%=cid %>!");
+		System.err.println("The process is interrupted.");
+		System.err.println();
+		throw e;
+	}

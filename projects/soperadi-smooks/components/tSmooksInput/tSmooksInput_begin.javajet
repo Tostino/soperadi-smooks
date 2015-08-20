@@ -1,0 +1,178 @@
+/*******************************************************************************
+ * Copyright (c) 2009 SOPERA GmbH
+ * All rights reserved. 
+ * This program and the accompanying materials are made available
+ * under the terms of the GNU Lesser General Public License v 3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-3.0.txt
+ ******************************************************************************/
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn 
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType
+		java.util.List 
+    	java.util.Map
+    		
+	" 
+%>
+<% 
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName();	
+    List<Map<String, String>> schemas = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__SCHEMAS__");
+    
+    String mode = ElementParameterParser.getValue(node, "__INPUT_FORMAT__");
+        
+    String inputfile = ElementParameterParser.getValue(node, "__INPUT_FILE__");
+    String mappingfile = ElementParameterParser.getValue(node, "__MAPPING_FILE__");
+    
+    //boolean useediuri = ElementParameterParser.getValue(node,"__IS_EDI__").equals("true");
+    String encoding = ElementParameterParser.getValue(node, "__ENCODING__");
+    
+    String outputS = "Begin:";
+    String strQuery = "";
+
+    List< ? extends IConnection> connections = node.getOutgoingSortedConnections();
+    String xPath = "";
+    
+%>
+	
+    try { // main block
+	int nb_line_<%=cid %> = 0;   
+	String str_inpt_<%=cid %> = "";
+	
+<%
+// *** EDI transform begin *** //
+    if(("EDI").equals(mode)){
+%>
+	   int concol_<%=cid %> = 0;
+	   int notNullColumns_<%=cid %> = 0;	
+  	   org.sopera.di.smooks.ComponentFacade inputFlow_<%=cid %> = com.google.inject.Guice.createInjector(new org.sopera.di.smooks.ComponentModule()).getInstance(org.sopera.di.smooks.ComponentFacade.class);
+
+
+<%    
+    if(connections!=null && connections.size()>0) {
+
+// Step 1 Begin
+// Calculate the number of active connections
+	   for(IConnection conn : connections) {
+	      if (conn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+		     String query = null;
+			 for(Map<String, String> schemaMap : schemas) {
+			    if(schemaMap.get("SCHEMA").equals(conn.getName())) {
+					xPath = schemaMap.get("XPATH");
+					if (xPath == null || xPath.equals("")) {
+%>
+			if(true) {
+				throw new RuntimeException("Can't find LoopPath to current scheme <%=schemaMap.get("SCHEMA")%>!");
+			}
+<%			
+					} else { // Xpath is null
+%>
+			inputFlow_<%=cid %>.setXPath(<%=xPath%>);
+<%
+ 		        	}
+ 		        } // schemaMap.get("SCHEMA").equals(conn.getName())
+			 } // schemas
+		  } // conn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)
+	   } // connections
+// Step 1 End
+%>	
+
+// Step 2 
+// Activate the inputFlow 
+
+
+    inputFlow_<%=cid %>.setMapping(<%=mappingfile%>);
+    
+    inputFlow_<%=cid %>.setEDI(<%=inputfile%>);
+    
+	inputFlow_<%=cid %>.start();
+	
+	inputFlow_<%=cid %>.startRead();
+
+// Step 3 
+// Loop for the data communication iterations
+
+	while (!inputFlow_<%=cid %>.isEndOfFlow()) { // loop to iterate the data communication
+
+	
+<%
+
+// Step 3.1 Begin
+// Loop for active connections
+	   
+	   for(IConnection conn : connections) {
+	      if (conn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+		     String query = null;
+		     String mapping = "";
+		     String[] paramNames = null;
+			 for(Map<String, String> schemaMap : schemas) {
+			    xPath = schemaMap.get("XPATH");
+			    if(schemaMap.get("SCHEMA").equals(conn.getName()) && !(xPath == null || xPath.equals(""))) {
+%>
+	<%=conn.getName() %>=new <%=conn.getName() %>Struct();
+
+	if (inputFlow_<%=cid %>.getXPath().equals(<%=xPath%>) && !inputFlow_<%=cid %>.isEndOfFlow()) {
+<%
+ 		           outputS = outputS  + " " + conn.getName() + ":";
+				   IMetadataTable metadata = conn.getMetadataTable();
+			       if(metadata!=null){
+		              List<IMetadataColumn> columns = metadata.getListColumns();
+		              int i = 0;
+		              for(IMetadataColumn column:columns) {
+        			     String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+				         JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+				         String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
+%>
+ 		str_inpt_<%=cid %> = inputFlow_<%=cid %>.findTagValue("<%=column.getLabel()%>");
+<%
+        i++;
+                         	if (javaType == JavaTypesManager.DATE) {
+%>
+		<%=conn.getName() %>.<%=column.getLabel() %> = ParserUtils.parseTo_Date(str_inpt_<%=cid %>, <%= patternValue %>);
+<%
+						 	} else if (javaType == JavaTypesManager.STRING || javaType == JavaTypesManager.OBJECT) {
+%>
+		<%=conn.getName() %>.<%=column.getLabel() %> = str_inpt_<%=cid %>;
+<%						 
+						 	} else if (javaType == JavaTypesManager.BYTE_ARRAY) {
+%>
+		<%=conn.getName() %>.<%=column.getLabel() %> = str_inpt_<%=cid %>.getBytes(<%=encoding %>);
+<%						 
+							} else if(JavaTypesManager.isNumberType(javaType)) { 
+%>
+		<%=conn.getName() %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%= typeToGenerate %>(ParserUtils.parseTo_Number(str_inpt_<%=cid %>, ',', '.'));
+<%
+							} else {
+%>
+		<%=conn.getName() %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%= typeToGenerate %>(str_inpt_<%=cid %>);
+<%
+						 	}
+ 		              } // columns
+ 		           } // metadata!=null
+%>
+     }  //inputFlow_<=cid>.getXPath().equals(<=xPath>)
+     else {
+		<%=conn.getName() %> = null;
+     }
+<%
+ 		        } // schemaMap.get("SCHEMA").equals(conn.getName())
+	            } // schemas
+			 } // conn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)
+		  } // connections
+
+
+	  
+		  
+	}// connections!=null && connections.size()>0
+	}// if (mode)
+%>
+

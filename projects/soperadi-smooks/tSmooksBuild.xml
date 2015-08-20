@@ -1,63 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="zipFiles" name="tSmooksComponent">
 	<property name="project_dir" value="tSmooks"/>
-	<property name="svn_repository" value="http://soperadi-smooks.googlecode.com/svn/trunk"/>
 	<property name="component_dir" value="${project_dir}/component/tSmooks"/>
-	<property name="jobs_dir" value="${project_dir}/job"/>
 	<property name="lib_dir" value="${project_dir}/lib"/>
 	<property name="res_dir" value="${project_dir}/resources"/>
 	<property name="temp_dir" value="${project_dir}/temp"/>
-	<property name="jar.class.path" value="antlr-2.7.7.jar aopalliance.jar commons-codec-1.2.jar commons-logging-1.1.jar freemarker-2.3.11.jar groovy-all-1.5.0.jar guice-2.0.jar jaxen-1.1.1.jar milyn-commons-1.2.4.jar milyn-edisax-parser-1.2.4.jar milyn-smooks-core-1.2.4.jar milyn-smooks-csv-1.2.4.jar milyn-smooks-edi-1.2.4.jar milyn-smooks-javabean-1.2.4.jar milyn-smooks-scripting-1.2.4.jar milyn-smooks-templating-1.2.4.jar mvel2-2.0.12.jar opencsv-1.8.jar"/>
+	<property name="jar.class.path" value="antlr-2.7.7.jar aopalliance.jar commons-codec-1.2.jar commons-lang-2.4.jar commons-logging-1.1.jar freemarker-2.3.15.jar groovy-all-1.5.0.jar guice-4.0.jar icu4j-2.6.1.jar jackson-core-lgpl-1.0.1.jar jaxen-1.1.1.jar jta-1.1.jar milyn-smooks-all-1.5.1.jar mvel2-2.0.17.jar ognl-2.7.3.jar ow2-bundles-externals-opencsv-1.0.23.jar xercesImpl-2.6.2.jar xmlParserAPIs-2.6.2.jar xmlpull-1.1.3.1.jar xom-1.0.jar xpp3_min-1.1.4c.jar xstream-1.4.1.jar"/>
 	<path id="project.classpath">
 		<pathelement path="classpath"/>
 	</path>
 	<path id="soperadi-smooks.classpath">
 		<pathelement location="${temp_dir}/bin"/>
-		<pathelement location="${lib_dir}/milyn-commons-1.2.4.jar"/>
-		<pathelement location="${lib_dir}/milyn-edisax-parser-1.2.4.jar"/>
+		<pathelement location="${lib_dir}/milyn-smooks-all-1.5.1.jar"/>
 		<pathelement location="${lib_dir}/jaxen-1.1.1.jar"/>
-		<pathelement location="${lib_dir}/guice-2.0.jar"/>
-		<pathelement location="${lib_dir}/milyn-smooks-core-1.2.4.jar"/>
+		<pathelement location="${lib_dir}/guice-4.0.jar"/>
 	</path>
-	<taskdef name="svn" classpathref="project.classpath" classname="org.tigris.subversion.svnant.SvnTask"/>
 	<target name="init">
 		<delete dir="${project_dir}"/>
 		<delete file="${project_dir}.zip"/>
 		<mkdir dir="${project_dir}"/>
+		<mkdir dir="${project_dir}/bin"/>
 		<mkdir dir="${temp_dir}"/>
 		<mkdir dir="${temp_dir}/bin"/>
 		<mkdir dir="${temp_dir}/lib"/>
+		<mkdir dir="${lib_dir}"/>
 	</target>
 	<target name="copyLib" depends="init">
-		<svn javahl="false" svnkit="true">
-			<checkout url="${svn_repository}/projects/soperadi-smooks/lib/common" destPath="${lib_dir}"/>
-			<checkout url="${svn_repository}/projects/soperadi-smooks/lib/csv-to-xml" destPath="${temp_dir}/lib/csv-to-xml"/>
-			<checkout url="${svn_repository}/projects/soperadi-smooks/lib/edi-to-xml" destPath="${temp_dir}/lib/edi-to-xml"/>
-			<checkout url="${svn_repository}/projects/soperadi-smooks/lib/xml-to-xml" destPath="${temp_dir}/lib/xml-to-xml"/>
-		</svn>
 		<copy todir="${lib_dir}" flatten="true">
-			<fileset dir="${temp_dir}/lib"/>
+			<fileset dir="lib"/>
 		</copy>
-		<delete dir="${lib_dir}/csv-to-xml"/>
-		<delete dir="${lib_dir}/edi-to-xml"/>
-		<delete dir="${lib_dir}/xml-to-xml"/>
-		<delete dir="${temp_dir}/lib"/>
+		<copy todir="${temp_dir}/lib" flatten="true">
+			<fileset dir="${lib_dir}"/>
+		</copy>
 	</target>
 	<target name="compile" depends="copyLib">
-		<svn javahl="false" svnkit="true">
-			<checkout url="${svn_repository}/projects/soperadi-smooks/src/org/sopera/di/smooks" destPath="${temp_dir}"/>
-		</svn>
-		<javac srcdir="${temp_dir}" destdir="${temp_dir}/bin">
+		<copy todir="${temp_dir}/bin">
+			<fileset dir="src/org/sopera/di/smooks"/>
+		</copy>
+		<javac includeantruntime="false" srcdir="${temp_dir}" destdir="${project_dir}/bin">
 			<classpath refid="soperadi-smooks.classpath"/>
 		</javac>
 	</target>
 	<target name="zipFiles" depends="compile">
-		<svn javahl="false" svnkit="true">
-			<info target="${svn_repository}" propPrefix="Revision."/>
-			<checkout url="${svn_repository}/components/tSmooks" destPath="${component_dir}"/>
-			<checkout url="${svn_repository}/jobs/tSmooks/TALENDDEMOSJAVA" destPath="${jobs_dir}"/>
-			<checkout url="${svn_repository}/projects/soperadi-smooks/test/resources" destPath="${res_dir}"/>
-		</svn>
+		<copy todir="${component_dir}">
+			<fileset dir="components/tSmooks"/>
+		</copy>
+
+		<copy todir="${res_dir}">
+			<fileset dir="test/resources"/>
+		</copy>
+		
 		<delete dir="${res_dir}/edi-to-xml-input"/>
 		<delete file="${res_dir}/log4j.xml"/>
 		<delete file="${res_dir}/namespaces.xml"/>
@@ -77,6 +69,5 @@
 		</jar>
 		<delete dir="${temp_dir}"/>
 		<zip destfile="${project_dir}.zip" basedir="${project_dir}"/>
-		<delete dir="${project_dir}"/>
 	</target>
 </project>
