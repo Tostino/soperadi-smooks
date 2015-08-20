@@ -2,6 +2,7 @@
 <project basedir="." default="zipFiles" name="tSmooksComponent">
 	<property name="project_dir" value="tSmooks"/>
 	<property name="component_dir" value="${project_dir}/component/tSmooks"/>
+	<property name="jobs_dir" value="${project_dir}/job"/>
 	<property name="lib_dir" value="${project_dir}/lib"/>
 	<property name="res_dir" value="${project_dir}/resources"/>
 	<property name="temp_dir" value="${project_dir}/temp"/>
@@ -37,13 +38,27 @@
 		<copy todir="${temp_dir}/bin">
 			<fileset dir="src/org/sopera/di/smooks"/>
 		</copy>
-		<javac includeantruntime="false" srcdir="${temp_dir}" destdir="${project_dir}/bin">
+		<javac target="1.7" source="1.7" includeantruntime="false" srcdir="${temp_dir}" destdir="${project_dir}/bin">
 			<classpath refid="soperadi-smooks.classpath"/>
 		</javac>
 	</target>
 	<target name="zipFiles" depends="compile">
+		<jar destfile="${lib_dir}/org.sopera.di.smooks.jar" basedir="${project_dir}/bin">
+			<manifest>
+				<attribute name="Class-Path" value="${jar.class.path}"/>
+			</manifest>
+		</jar>
+		
 		<copy todir="${component_dir}">
 			<fileset dir="components/tSmooks"/>
+		</copy>
+
+		<copy todir="${component_dir}">
+			<fileset dir="${lib_dir}"/>
+		</copy>
+		
+		<copy todir="${jobs_dir}">
+			<fileset dir="jobs/tSmooks/TALENDDEMOSJAVA"/>
 		</copy>
 
 		<copy todir="${res_dir}">
@@ -62,11 +77,6 @@
 		<move file="${res_dir}/csv-to-xml" tofile="${res_dir}/task002-csv-to-xml"/>
 		<move file="${res_dir}/xml-to-xml" tofile="${res_dir}/task003-xml-to-xml"/>
 		<move file="${res_dir}/edi-to-xml-to-xml" tofile="${res_dir}/task004-edi-to-xml-to-xml"/>
-		<jar destfile="${lib_dir}/org.sopera.di.smooks.jar" basedir="${temp_dir}/bin">
-			<manifest>
-				<attribute name="Class-Path" value="${jar.class.path}"/>
-			</manifest>
-		</jar>
 		<delete dir="${temp_dir}"/>
 		<zip destfile="${project_dir}.zip" basedir="${project_dir}"/>
 	</target>

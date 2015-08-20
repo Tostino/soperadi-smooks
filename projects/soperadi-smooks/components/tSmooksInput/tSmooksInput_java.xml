@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <COMPONENT> 
- 	<HEADER PLATEFORM="ALL" SERIAL="" VERSION="0.102" STATUS="ALPHA"
-		COMPATIBILITY="ALL" AUTHOR="SOPERA" RELEASE_DATE="20090911"
+ 	<HEADER PLATEFORM="ALL" SERIAL="" VERSION="0.1" STATUS="ALPHA"
+		COMPATIBILITY="ALL" AUTHOR="Adam Brusselback" RELEASE_DATE="20150820"
 		STARTABLE="true" HAS_CONDITIONAL_OUTPUTS="true">
 		<SIGNATURE />
 	</HEADER>
@@ -58,27 +58,55 @@
   
   <CODEGENERATION>
       <IMPORTS> 
-     		<IMPORT NAME="org.sopera.di.smooks.jar" MODULE="org.sopera.di.smooks.jar"
+      		<IMPORT NAME="org.sopera.di.smooks.jar" MODULE="org.sopera.di.smooks.jar"
+				REQUIRED="true" />
+     		<IMPORT NAME="antlr-2.7.7.jar" MODULE="antlr-2.7.7.jar"
 				REQUIRED="true" />
      		<IMPORT NAME="aopalliance.jar" MODULE="aopalliance.jar"
 				REQUIRED="true" />
+     		<IMPORT NAME="commons-codec-1.2.jar" MODULE="commons-codec-1.2.jar"
+				REQUIRED="true" />
      		<IMPORT NAME="commons-logging-1.1.jar" MODULE="commons-logging-1.1.jar"
 				REQUIRED="true" />
-     		<IMPORT NAME="guice-2.0.jar" MODULE="guice-2.0.jar"
+     		<IMPORT NAME="freemarker-2.3.15.jar" MODULE="freemarker-2.3.15.jar"
+				REQUIRED="true" />
+     		<IMPORT NAME="groovy-all-1.5.0.jar" MODULE="groovy-all-1.5.0.jar"
+				REQUIRED="true" />
+     		<IMPORT NAME="guice-4.0.jar" MODULE="guice-4.0.jar"
 				REQUIRED="true" />
      		<IMPORT NAME="jaxen-1.1.1.jar" MODULE="jaxen-1.1.1.jar"
 				REQUIRED="true" />
-     		<IMPORT NAME="milyn-commons-1.2.4.jar" MODULE="milyn-commons-1.2.4.jar"
+     		<IMPORT NAME="milyn-smooks-all-1.5.1.jar" MODULE="milyn-smooks-all-1.5.1.jar"
 				REQUIRED="true" />
-     		<IMPORT NAME="milyn-edisax-parser-1.2.4.jar" MODULE="milyn-edisax-parser-1.2.4.jar"
+     		<IMPORT NAME="mvel2-2.0.17.jar" MODULE="mvel2-2.0.17.jar"
 				REQUIRED="true" />
-     		<IMPORT NAME="milyn-smooks-core-1.2.4.jar" MODULE="milyn-smooks-core-1.2.4.jar"
+     		<IMPORT NAME="opencsv-1.8.jar" MODULE="opencsv-1.8.jar"
 				REQUIRED="true" />
-     		<IMPORT NAME="milyn-smooks-csv-1.2.4.jar" MODULE="milyn-smooks-csv-1.2.4.jar"
-				REQUIRED="true" />
-     		<IMPORT NAME="milyn-smooks-edi-1.2.4.jar" MODULE="milyn-smooks-edi-1.2.4.jar"
-				REQUIRED="true" />
-	  </IMPORTS> 
+			<IMPORT NAME="ow2-bundles-externals-opencsv-1.0.23.jar" MODULE="ow2-bundles-externals-opencsv-1.0.23.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="icu4j-2.6.1.jar" MODULE="icu4j-2.6.1.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="jackson-core-lgpl-1.0.1.jar" MODULE="jackson-core-lgpl-1.0.1.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="jta-1.1.jar" MODULE="jta-1.1.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="log4j-1.2.14.jar" MODULE="log4j-1.2.14.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="ognl-2.7.3.jar" MODULE="ognl-2.7.3.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="xercesImpl-2.6.2.jar" MODULE="xercesImpl-2.6.2.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="xmlParserAPIs-2.6.2.jar" MODULE="xmlParserAPIs-2.6.2.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="xmlpull-1.1.3.1.jar" MODULE="xmlpull-1.1.3.1.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="xom-1.0.jar" MODULE="xom-1.0.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="xpp3_min-1.1.4c.jar" MODULE="xpp3_min-1.1.4c.jar"
+     			REQUIRED="true" />
+			<IMPORT NAME="xstream-1.4.1.jar" MODULE="xstream-1.4.1.jar"
+     			REQUIRED="true" />
+      </IMPORTS> 
   </CODEGENERATION>  
   <RETURNS> 
     <RETURN AVAILABILITY="AFTER" NAME="NB_LINE" TYPE="id_Integer"/> 
